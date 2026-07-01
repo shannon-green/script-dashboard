@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #1A1E24; color: #fff; padding: 0; min-height: 100vh; }
+  .header { background: #1A1E24; border-bottom: 1px solid #343D4B; padding: 14px 24px; display: flex; align-items: center; gap: 12px; }
+  .logo-mark { width: 32px; height: 32px; background: #1C97A6; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo-mark svg { width: 20px; height: 20px; fill: #fff; }
+  .logo-text { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.01em; }
+  .logo-text span { color: #1C97A6; }
+  .header-sub { font-size: 12px; color: #989898; margin-left: auto; }
+  .main { padding: 24px; }
+  .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .upload-zone { border: 1px dashed #343D4B; border-radius: 10px; padding: 20px; background: #1A1E24; cursor: pointer; text-align: center; transition: border-color 0.15s, background 0.15s; }
+  .upload-zone:hover { border-color: #1C97A6; background: rgba(28,151,166,0.05); }
+  .upload-zone.has-file { border-color: #1C97A6; border-style: solid; background: rgba(28,151,166,0.08); }
+  .upload-zone input { display: none; }
+  .upload-icon { font-size: 22px; color: #1C97A6; margin-bottom: 8px; }
+  .upload-label { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .upload-sub { font-size: 11px; color: #989898; line-height: 1.5; }
+  .upload-status { font-size: 11px; color: #A6CA72; font-weight: 700; margin-top: 8px; }
+  .dup-notice { font-size: 12px; color: #A6CA72; background: rgba(166,202,114,0.1); border: 1px solid rgba(166,202,114,0.3); border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; display: none; }
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+  .metric { background: #343D4B; border-radius: 8px; padding: 14px 16px; border: 1px solid #4E4E4E; }
+  .metric-label { font-size: 11px; color: #989898; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; font-weight: 700; }
+  .metric-val { font-size: 28px; font-weight: 700; color: #fff; }
+  .metric-val.installed { color: #A6CA72; }
+  .metric-val.pending { color: #E05555; }
+  .section { margin-bottom: 20px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #343D4B; }
+  .section-title { font-size: 14px; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .badge-installed { background: rgba(166,202,114,0.15); color: #A6CA72; border: 1px solid rgba(166,202,114,0.3); }
+  .badge-pending { background: rgba(220,53,53,0.15); color: #E05555; border: 1px solid rgba(220,53,53,0.3); }
+  .clear-btn { margin-left: auto; font-size: 11px; border: 1px solid #4E4E4E; border-radius: 6px; padding: 4px 12px; cursor: pointer; background: transparent; color: #989898; font-family: inherit; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+  .clear-btn:hover { border-color: #989898; color: #fff; }
+  .search-bar { display: flex; align-items: center; gap: 8px; background: #343D4B; border: 1px solid #4E4E4E; border-radius: 8px; padding: 0 12px; margin-bottom: 10px; }
+  .search-bar i { color: #989898; font-size: 16px; flex-shrink: 0; }
+  .search-bar input { background: transparent; border: none; outline: none; color: #fff; font-family: inherit; font-size: 13px; padding: 9px 0; width: 100%; }
+  .search-bar input::placeholder { color: #4E4E4E; }
+  .search-count { font-size: 11px; color: #989898; margin-bottom: 8px; }
+  .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #343D4B; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+  th { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #989898; padding: 10px 12px; text-align: left; background: #343D4B; border-bottom: 1px solid #4E4E4E; }
+  td { padding: 9px 12px; border-bottom: 1px solid #343D4B; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #1A1E24; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(52,61,75,0.7); }
+  .hits-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; background: rgba(28,151,166,0.2); color: #1C97A6; border: 1px solid rgba(28,151,166,0.35); }
+  .highlight { background: rgba(28,151,166,0.3); border-radius: 2px; padding: 0 1px; }
+  .no-data { font-size: 13px; color: #989898; padding: 2rem; text-align: center; background: #1A1E24; border-radius: 8px; border: 1px solid #343D4B; }
+  a { color: #1C97A6; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-mark">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+  </div>
+  <div class="logo-text">fullthrottle<span>.ai</span>®</div>
+  <div class="header-sub">Client Onboarding Tracker</div>
+</div>
+
+<div class="main">
+  <div class="upload-grid">
+    <div class="upload-zone" id="zone1" onclick="document.getElementById('file1').click()">
+      <input type="file" id="file1" accept=".csv,.xlsx,.xls" onchange="handleFile1(this)">
+      <div class="upload-icon"><i class="ti ti-users" aria-hidden="true"></i></div>
+      <div class="upload-label">Daily Onboarding List</div>
+      <div class="upload-sub">account name · OHQ ID · website URL · close date · channel</div>
+      <div class="upload-status" id="status1"></div>
+    </div>
+    <div class="upload-zone" id="zone2" onclick="document.getElementById('file2').click()">
+      <input type="file" id="file2" accept=".csv,.xlsx,.xls" onchange="handleFile2(this)">
+      <div class="upload-icon"><i class="ti ti-chart-bar" aria-hidden="true"></i></div>
+      <div class="upload-label">ft.app Active Clients</div>
+      <div class="upload-sub">Client Name · OHQ ID · Channel Client ID · Hits (YDA) · Hits (7d)</div>
+      <div class="upload-status" id="status2"></div>
+    </div>
+  </div>
+
+  <div class="dup-notice" id="dupNotice"></div>
+
+  <div class="metrics">
+    <div class="metric"><div class="metric-label">Total Onboarding</div><div class="metric-val" id="mTotal">—</div></div>
+    <div class="metric"><div class="metric-label">Active in ft.app</div><div class="metric-val" id="mActive">—</div></div>
+    <div class="metric"><div class="metric-label">Script Installed</div><div class="metric-val installed" id="mInstalled">—</div></div>
+    <div class="metric"><div class="metric-label">Pending Install</div><div class="metric-val pending" id="mPending">—</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Script Installed</span>
+      <span class="badge badge-installed" id="installedCount">0</span>
+      <button class="clear-btn" onclick="clearAll()">Clear all</button>
+    </div>
+    <div class="search-bar">
+      <i class="ti ti-search" aria-hidden="true"></i>
+      <input type="text" id="searchInstalled" placeholder="Search by name, OHQ ID, or URL…" oninput="filterTable('installed')">
+    </div>
+    <div class="search-count" id="installedSearchCount"></div>
+    <div id="matchedTable"><div class="no-data">Upload both files to see results.</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Pending Script Install</span>
+      <span class="badge badge-pending" id="pendingCount">0</span>
+    </div>
+    <div class="search-bar">
+      <i class="ti ti-search" aria-hidden="true"></i>
+      <input type="text" id="searchPending" placeholder="Search by name, OHQ ID, or URL…" oninput="filterTable('pending')">
+    </div>
+    <div class="search-count" id="pendingSearchCount"></div>
+    <div id="unmatchedTable"><div class="no-data">Upload both files to see results.</div></div>
+  </div>
+</div>
+
+<script>
+let onboardingData = [];
+let activeData = [];
+let matchedRows = [];
+let unmatchedRows = [];
+let obNameCol, obIdCol, obUrlCol, obChanCol, obDateCol, acChanCol, acYDACol, ac7dCol;
+
+function normalizeKey(val) { return String(val || '').trim().toLowerCase(); }
+
+function findCol(headers, candidates) {
+  for (const c of candidates) {
+    const found = headers.find(h => h.trim().toLowerCase() === c.toLowerCase());
+    if (found) return found;
+  }
+  return null;
+}
+
+function parseFile(file, cb) {
+  const name = file.name.toLowerCase();
+  if (name.endsWith('.csv')) {
+    Papa.parse(file, { header: true, skipEmptyLines: true, complete: r => cb(r.data) });
+  } else {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      cb(XLSX.utils.sheet_to_json(ws, { defval: '' }));
+    };
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+function handleFile1(input) {
+  if (!input.files[0]) return;
+  parseFile(input.files[0], rows => {
+    const headers = Object.keys(rows[0] || {});
+    const idCol = findCol(headers, ['OHQ ID', 'ohq id', 'OHQID']);
+    if (!idCol) { alert('Could not find OHQ ID column in File 1.'); return; }
+    const existing = new Set(onboardingData.map(r => normalizeKey(r[idCol])));
+    let dupes = 0;
+    const fresh = [];
+    for (const row of rows) {
+      const key = normalizeKey(row[idCol]);
+      if (!key || existing.has(key)) { dupes++; continue; }
+      existing.add(key);
+      fresh.push(row);
+    }
+    onboardingData = [...onboardingData, ...fresh];
+    const notice = document.getElementById('dupNotice');
+    if (dupes > 0) {
+      notice.textContent = `${dupes} duplicate${dupes > 1 ? 's' : ''} skipped — OHQ ID already exists.`;
+      notice.style.display = 'block';
+    } else { notice.style.display = 'none'; }
+    document.getElementById('zone1').classList.add('has-file');
+    document.getElementById('status1').textContent = `✓ ${onboardingData.length} clients loaded`;
+    render();
+  });
+}
+
+function handleFile2(input) {
+  if (!input.files[0]) return;
+  parseFile(input.files[0], rows => {
+    activeData = rows;
+    document.getElementById('zone2').classList.add('has-file');
+    document.getElementById('status2').textContent = `✓ ${rows.length} active clients loaded`;
+    render();
+  });
+}
+
+function render() {
+  if (!onboardingData.length || !activeData.length) {
+    updateMetrics(onboardingData.length, activeData.length, null, null);
+    return;
+  }
+  const ob = onboardingData, ac = activeData;
+  const obH = Object.keys(ob[0]), acH = Object.keys(ac[0]);
+  obNameCol = findCol(obH, ['account name', 'Account Name']);
+  obIdCol   = findCol(obH, ['OHQ ID', 'ohq id', 'OHQID']);
+  obUrlCol  = findCol(obH, ['website URL', 'Website URL', 'url', 'URL']);
+  obChanCol = findCol(obH, ['channel', 'Channel']);
+  obDateCol = findCol(obH, ['close date', 'Close Date']);
+  acChanCol = findCol(acH, ['CHANNEL CLIENT ID', 'Channel Client ID']);
+  acYDACol  = findCol(acH, ['Hits (YDA)', 'hits (yda)']);
+  ac7dCol   = findCol(acH, ['Hits (7d)', 'hits (7d)']);
+  const acIdCol = findCol(acH, ['OHQ ID', 'ohq id', 'OHQID']);
+  const activeMap = {};
+  for (const row of ac) {
+    const key = normalizeKey(row[acIdCol]);
+    if (key) activeMap[key] = row;
+  }
+  matchedRows = []; unmatchedRows = [];
+  for (const row of ob) {
+    const key = normalizeKey(row[obIdCol]);
+    if (activeMap[key]) matchedRows.push({ ob: row, ac: activeMap[key] });
+    else unmatchedRows.push(row);
+  }
+  updateMetrics(ob.length, ac.length, matchedRows.length, unmatchedRows.length);
+  document.getElementById('searchInstalled').value = '';
+  document.getElementById('searchPending').value = '';
+  filterTable('installed');
+  filterTable('pending');
+}
+
+function highlight(text, query) {
+  if (!query) return text;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return String(text).replace(new RegExp(`(${escaped})`, 'gi'), '<span class="highlight">$1</span>');
+}
+
+function filterTable(type) {
+  const isInstalled = type === 'installed';
+  const query = (document.getElementById(isInstalled ? 'searchInstalled' : 'searchPending').value || '').trim().toLowerCase();
+  const rows = isInstalled ? matchedRows : unmatchedRows;
+  const countEl = document.getElementById(isInstalled ? 'installedSearchCount' : 'pendingSearchCount');
+  const tableEl = document.getElementById(isInstalled ? 'matchedTable' : 'unmatchedTable');
+
+  if (!rows.length) {
+    countEl.textContent = '';
+    tableEl.innerHTML = '<div class="no-data">Upload both files to see results.</div>';
+    return;
+  }
+
+  const filtered = query ? rows.filter(r => {
+    const ob = isInstalled ? r.ob : r;
+    const name = normalizeKey(ob[obNameCol]);
+    const id   = normalizeKey(ob[obIdCol]);
+    const url  = normalizeKey(ob[obUrlCol]);
+    return name.includes(query) || id.includes(query) || url.includes(query);
+  }) : rows;
+
+  countEl.textContent = query ? `${filtered.length} of ${rows.length} shown` : '';
+
+  if (!filtered.length) {
+    tableEl.innerHTML = '<div class="no-data">No results match your search.</div>';
+    return;
+  }
+
+  if (isInstalled) {
+    let html = `<div class="table-wrap"><table><thead><tr>
+      <th style="width:16%">Account</th><th style="width:10%">OHQ ID</th>
+      <th style="width:14%">Website</th><th style="width:10%">Channel</th>
+      <th style="width:10%">Close Date</th><th style="width:12%">Channel Client ID</th>
+      <th style="width:9%">Hits (YDA)</th><th style="width:9%">Hits (7d)</th>
+    </tr></thead><tbody>`;
+    for (const { ob, ac } of filtered) {
+      const url = ob[obUrlCol] || '';
+      const yda = ac[acYDACol] !== undefined ? Number(ac[acYDACol]).toLocaleString() : '—';
+      const d7  = ac[ac7dCol]  !== undefined ? Number(ac[ac7dCol]).toLocaleString()  : '—';
+      const hName = highlight(ob[obNameCol]||'—', query);
+      const hId   = highlight(ob[obIdCol]||'—', query);
+      const hUrl  = highlight(url||'—', query);
+      html += `<tr>
+        <td title="${ob[obNameCol]||''}">${hName}</td>
+        <td>${hId}</td>
+        <td title="${url}"><a href="${url.startsWith('http')?url:'https://'+url}">${hUrl}</a></td>
+        <td>${ob[obChanCol]||'—'}</td>
+        <td>${ob[obDateCol]||'—'}</td>
+        <td>${ac[acChanCol]||'—'}</td>
+        <td><span class="hits-pill">${yda}</span></td>
+        <td><span class="hits-pill">${d7}</span></td>
+      </tr>`;
+    }
+    html += '</tbody></table></div>';
+    tableEl.innerHTML = html;
+  } else {
+    let html = `<div class="table-wrap"><table><thead><tr>
+      <th style="width:22%">Account</th><th style="width:13%">OHQ ID</th>
+      <th style="width:22%">Website</th><th style="width:16%">Channel</th>
+      <th style="width:16%">Close Date</th>
+    </tr></thead><tbody>`;
+    for (const ob of filtered) {
+      const url = ob[obUrlCol] || '';
+      const hName = highlight(ob[obNameCol]||'—', query);
+      const hId   = highlight(ob[obIdCol]||'—', query);
+      const hUrl  = highlight(url||'—', query);
+      html += `<tr>
+        <td title="${ob[obNameCol]||''}">${hName}</td>
+        <td>${hId}</td>
+        <td title="${url}"><a href="${url.startsWith('http')?url:'https://'+url}">${hUrl}</a></td>
+        <td>${ob[obChanCol]||'—'}</td>
+        <td>${ob[obDateCol]||'—'}</td>
+      </tr>`;
+    }
+    html += '</tbody></table></div>';
+    tableEl.innerHTML = html;
+  }
+}
+
+function updateMetrics(total, active, installed, pending) {
+  document.getElementById('mTotal').textContent = total || '—';
+  document.getElementById('mActive').textContent = active || '—';
+  document.getElementById('mInstalled').textContent = installed !== null ? installed : '—';
+  document.getElementById('mPending').textContent = pending !== null ? pending : '—';
+  if (installed !== null) document.getElementById('installedCount').textContent = installed;
+  if (pending !== null) document.getElementById('pendingCount').textContent = pending;
+}
+
+function clearAll() {
+  onboardingData = []; activeData = []; matchedRows = []; unmatchedRows = [];
+  ['zone1','zone2'].forEach(id => document.getElementById(id).classList.remove('has-file'));
+  ['status1','status2'].forEach(id => document.getElementById(id).textContent = '');
+  ['searchInstalled','searchPending'].forEach(id => document.getElementById(id).value = '');
+  ['installedSearchCount','pendingSearchCount'].forEach(id => document.getElementById(id).textContent = '');
+  document.getElementById('dupNotice').style.display = 'none';
+  document.getElementById('file1').value = '';
+  document.getElementById('file2').value = '';
+  updateMetrics(0, 0, null, null);
+  ['mTotal','mActive','mInstalled','mPending'].forEach(id => document.getElementById(id).textContent = '—');
+  document.getElementById('matchedTable').innerHTML = '<div class="no-data">Upload both files to see results.</div>';
+  document.getElementById('unmatchedTable').innerHTML = '<div class="no-data">Upload both files to see results.</div>';
+}
+</script>
+</body>
+</html>
