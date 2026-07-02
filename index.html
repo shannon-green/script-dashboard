@@ -83,6 +83,10 @@
     </div>
   </div>
 
+  <div style="display:flex; justify-content:center; margin-bottom:20px;">
+    <button id="runBtn" onclick="runComparison()" style="background:#1c97a6; color:#fff; border:none; border-radius:6px; padding:6px 24px; font-size:12px; font-weight:700; font-family:inherit; cursor:pointer; letter-spacing:0.05em; text-transform:uppercase; opacity:0.4; pointer-events:none;">Run</button>
+  </div>
+
   <div class="dup-notice" id="dupNotice"></div>
 
   <div class="metrics">
@@ -169,6 +173,15 @@ function parseFile(file, cb) {
   }
 }
 
+function updateRunBtn() {
+  const btn = document.getElementById('runBtn');
+  if (onboardingData.length && activeData.length) {
+    btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+  } else {
+    btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none';
+  }
+}
+
 function handleFile1(input) {
   if (!input.files[0]) return;
   parseFile(input.files[0], rows => {
@@ -189,7 +202,7 @@ function handleFile1(input) {
     else notice.style.display = 'none';
     document.getElementById('zone1').classList.add('has-file');
     document.getElementById('status1').textContent = `✓ ${onboardingData.length} clients loaded`;
-    render();
+    updateRunBtn();
   });
 }
 
@@ -199,9 +212,11 @@ function handleFile2(input) {
     activeData = rows;
     document.getElementById('zone2').classList.add('has-file');
     document.getElementById('status2').textContent = `✓ ${rows.length} active clients loaded`;
-    render();
+    updateRunBtn();
   });
 }
+
+function runComparison() { render(); }
 
 function render() {
   if (!onboardingData.length) { updateMetrics(0,0,0,null,null); return; }
