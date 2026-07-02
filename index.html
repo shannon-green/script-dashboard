@@ -6,63 +6,63 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #1A1E24; color: #fff; min-height: 100vh; }
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #e8edf2; color: #1a202c; min-height: 100vh; }
   .header { background: #c6002b; border-bottom: 1px solid #a30024; padding: 12px 24px; display: flex; align-items: center; }
   .header-title { font-size: 15px; font-weight: 700; color: #fff; }
   .main { padding: 24px; }
   .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-  .upload-zone { border: 1px dashed #343D4B; border-radius: 10px; padding: 20px; background: #1A1E24; cursor: pointer; text-align: center; transition: border-color 0.15s, background 0.15s; }
+  .upload-zone { border: 1px dashed #b0bec5; border-radius: 10px; padding: 20px; background: #fff; cursor: pointer; text-align: center; transition: border-color 0.15s, background 0.15s; }
   .upload-zone:hover { border-color: #1C97A6; background: rgba(28,151,166,0.05); }
-  .upload-zone.has-file { border-color: #1C97A6; border-style: solid; background: rgba(28,151,166,0.08); }
+  .upload-zone.has-file { border-color: #1C97A6; border-style: solid; background: rgba(28,151,166,0.06); }
   .upload-zone input { display: none; }
-  .upload-label { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-  .upload-sub { font-size: 11px; color: #989898; line-height: 1.5; }
-  .upload-status { font-size: 11px; color: #A6CA72; font-weight: 700; margin-top: 8px; }
+  .upload-label { font-size: 13px; font-weight: 700; color: #1a202c; margin-bottom: 4px; }
+  .upload-sub { font-size: 11px; color: #718096; line-height: 1.5; }
+  .upload-status { font-size: 11px; color: #2f855a; font-weight: 700; margin-top: 8px; }
   .run-wrap { display: flex; justify-content: center; margin-bottom: 20px; padding-top: 12px; }
   #runBtn { background: #1c97a6; color: #fff; border: none; border-radius: 6px; padding: 6px 24px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.4; pointer-events: none; transition: opacity 0.2s; }
   #runBtn.active { opacity: 1; pointer-events: auto; }
   #runBtn.active:hover { background: #177f8c; }
-  .dup-notice { font-size: 12px; color: #A6CA72; background: rgba(166,202,114,0.1); border: 1px solid rgba(166,202,114,0.3); border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; display: none; }
+  .dup-notice { font-size: 12px; color: #276749; background: #c6f6d5; border: 1px solid #9ae6b4; border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; display: none; }
   .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
-  .metric { background: #343D4B; border-radius: 8px; padding: 14px 16px; border: 1px solid #4E4E4E; }
-  .metric-label { font-size: 11px; color: #989898; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; font-weight: 700; }
-  .metric-val { font-size: 28px; font-weight: 700; color: #fff; }
-  .metric-val.installed { color: #A6CA72; }
-  .metric-val.pending { color: #E05555; }
-  .metric-val.new-ob { color: #f5a623; }
+  .metric { background: #fff; border-radius: 8px; padding: 14px 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .metric-label { font-size: 11px; color: #718096; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; font-weight: 700; }
+  .metric-val { font-size: 28px; font-weight: 700; color: #1a202c; }
+  .metric-val.installed { color: #276749; }
+  .metric-val.pending { color: #c53030; }
+  .metric-val.new-ob { color: #c05621; }
   .section { margin-bottom: 20px; }
-  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #343D4B; flex-wrap: wrap; }
-  .section-title { font-size: 14px; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; }
+  .section-title { font-size: 14px; font-weight: 700; color: #1a202c; text-transform: uppercase; letter-spacing: 0.05em; }
   .badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
-  .badge-installed { background: rgba(166,202,114,0.15); color: #A6CA72; border: 1px solid rgba(166,202,114,0.3); }
-  .badge-pending { background: rgba(220,53,53,0.15); color: #E05555; border: 1px solid rgba(220,53,53,0.3); }
-  .badge-new { background: rgba(245,166,35,0.15); color: #f5a623; border: 1px solid rgba(245,166,35,0.3); }
+  .badge-installed { background: #c6f6d5; color: #276749; border: 1px solid #9ae6b4; }
+  .badge-pending { background: #fed7d7; color: #c53030; border: 1px solid #fc8181; }
+  .badge-new { background: #feebc8; color: #c05621; border: 1px solid #fbd38d; }
   .btn-group { margin-left: auto; display: flex; gap: 8px; align-items: center; }
-  .clear-btn, .download-btn { font-size: 11px; border: 1px solid #4E4E4E; border-radius: 6px; padding: 4px 12px; cursor: pointer; background: transparent; font-family: inherit; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
-  .clear-btn { color: #989898; }
-  .clear-btn:hover { border-color: #989898; color: #fff; }
+  .clear-btn, .download-btn { font-size: 11px; border: 1px solid #cbd5e0; border-radius: 6px; padding: 4px 12px; cursor: pointer; background: #fff; font-family: inherit; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+  .clear-btn { color: #718096; }
+  .clear-btn:hover { border-color: #718096; color: #1a202c; }
   .download-btn { color: #1C97A6; border-color: #1C97A6; }
-  .download-btn:hover { background: rgba(28,151,166,0.1); }
-  .search-bar { display: flex; align-items: center; background: #343D4B; border: 1px solid #4E4E4E; border-radius: 8px; padding: 0 12px; margin-bottom: 10px; }
-  .search-bar input { background: transparent; border: none; outline: none; color: #fff; font-family: inherit; font-size: 13px; padding: 9px 0; width: 100%; }
-  .search-bar input::placeholder { color: #4E4E4E; }
-  .search-count { font-size: 11px; color: #989898; margin-bottom: 8px; }
-  .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #343D4B; }
+  .download-btn:hover { background: rgba(28,151,166,0.08); }
+  .search-bar { display: flex; align-items: center; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 12px; margin-bottom: 10px; }
+  .search-bar input { background: transparent; border: none; outline: none; color: #1a202c; font-family: inherit; font-size: 13px; padding: 9px 0; width: 100%; }
+  .search-bar input::placeholder { color: #a0aec0; }
+  .search-count { font-size: 11px; color: #718096; margin-bottom: 8px; }
+  .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
   table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #989898; padding: 10px 12px; text-align: left; background: #343D4B; border-bottom: 1px solid #4E4E4E; white-space: nowrap; }
-  td { padding: 8px 12px; border-bottom: 1px solid #343D4B; color: #fff; background: #1A1E24; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  th { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #718096; padding: 10px 12px; text-align: left; background: #f7fafc; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+  td { padding: 8px 12px; border-bottom: 1px solid #edf2f7; color: #2d3748; background: #fff; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   td.notes-cell { max-width: 200px; white-space: normal; }
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(52,61,75,0.7); }
-  .hits-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; background: rgba(28,151,166,0.2); color: #1C97A6; border: 1px solid rgba(28,151,166,0.35); }
-  .missing-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; background: rgba(245,166,35,0.15); color: #f5a623; border: 1px solid rgba(245,166,35,0.3); }
-  .highlight { background: rgba(28,151,166,0.3); border-radius: 2px; padding: 0 1px; }
-  .no-data { font-size: 13px; color: #989898; padding: 2rem; text-align: center; background: #1A1E24; border-radius: 8px; border: 1px solid #343D4B; }
+  tr:hover td { background: #f7fafc; }
+  .hits-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; background: rgba(28,151,166,0.1); color: #1C97A6; border: 1px solid rgba(28,151,166,0.3); }
+  .missing-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; background: #feebc8; color: #c05621; border: 1px solid #fbd38d; }
+  .highlight { background: rgba(28,151,166,0.15); border-radius: 2px; padding: 0 1px; }
+  .no-data { font-size: 13px; color: #718096; padding: 2rem; text-align: center; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; }
   a { color: #1C97A6; text-decoration: none; }
   a:hover { text-decoration: underline; }
-  .notes-input { width: 100%; background: #343D4B; border: 1px solid #4E4E4E; border-radius: 6px; color: #fff; font-family: inherit; font-size: 12px; padding: 5px 8px; resize: none; outline: none; min-height: 32px; line-height: 1.4; }
-  .notes-input:focus { border-color: #1C97A6; }
-  .notes-input::placeholder { color: #4E4E4E; }
+  .notes-input { width: 100%; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; color: #2d3748; font-family: inherit; font-size: 12px; padding: 5px 8px; resize: none; outline: none; min-height: 32px; line-height: 1.4; }
+  .notes-input:focus { border-color: #1C97A6; background: #fff; }
+  .notes-input::placeholder { color: #a0aec0; }
 </style>
 </head>
 <body>
@@ -76,7 +76,7 @@
     <div class="upload-zone" id="zone1" onclick="document.getElementById('file1').click()">
       <input type="file" id="file1" accept=".csv,.xlsx,.xls" onchange="handleFile1(this)">
       <div class="upload-label">Daily Onboarding List</div>
-      <div class="upload-sub">Official Company Name · OHQ ID · Channel OHQ ID · website · close date · Reseller Channel</div>
+      <div class="upload-sub">Official Company Name · OHQ ID · Channel OHQ ID · website · close date · Reseller Channel · Opportunity Owner</div>
       <div class="upload-status" id="status1"></div>
     </div>
     <div class="upload-zone" id="zone2" onclick="document.getElementById('file2').click()">
@@ -143,7 +143,7 @@
 
 <script>
 var onboardingData = [], activeData = [], matchedRows = [], unmatchedRows = [], newRows = [];
-var obNameCol, obIdCol, obChanOhqCol, obUrlCol, obChanCol, obDateCol, acChanCol, acYDACol, ac7dCol;
+var obNameCol, obIdCol, obChanOhqCol, obUrlCol, obChanCol, obDateCol, obOwnerCol, acChanCol, acYDACol, ac7dCol;
 
 var NOTES_KEY = 'ft_onboarding_notes';
 
@@ -242,6 +242,7 @@ function render() {
   obUrlCol     = findCol(obH, ['website','Website','website URL','Website URL','url','URL']);
   obChanCol    = findCol(obH, ['Reseller Channel','reseller channel','channel','Channel']);
   obDateCol    = findCol(obH, ['close date','Close Date']);
+  obOwnerCol   = findCol(obH, ['Opportunity Owner','opportunity owner','Owner','owner']);
 
   var allNewRows = ob.filter(function(r) { return isEmpty(r[obIdCol]) || isEmpty(r[obChanOhqCol]); });
   var seenNames = new Set();
@@ -311,27 +312,27 @@ function filterTable(type) {
 
   var html = '';
   if (type === 'installed') {
-    html = '<div class="table-wrap"><table><thead><tr><th>Account</th><th>OHQ ID</th><th>Channel OHQ ID</th><th>Website</th><th>Reseller Channel</th><th>Close Date</th><th>Channel Client ID</th><th>Hits (YDA)</th><th>Hits (7d)</th><th>Script</th></tr></thead><tbody>';
+    html = '<div class="table-wrap"><table><thead><tr><th>Account</th><th>OHQ ID</th><th>Channel OHQ ID</th><th>Website</th><th>Reseller Channel</th><th>Close Date</th><th>Opportunity Owner</th><th>Channel Client ID</th><th>Hits (YDA)</th><th>Hits (7d)</th><th>Script</th></tr></thead><tbody>';
     for (var i = 0; i < filtered.length; i++) {
       var ob = filtered[i].ob, ac = filtered[i].ac;
       var url = ob[obUrlCol] || '', ohqId = ob[obIdCol] || '';
       var yda = ac[acYDACol] !== undefined ? Number(ac[acYDACol]).toLocaleString() : '—';
       var d7  = ac[ac7dCol]  !== undefined ? Number(ac[ac7dCol]).toLocaleString()  : '—';
-      html += '<tr><td title="' + (ob[obNameCol]||'') + '">' + highlight(ob[obNameCol]||'—', query) + '</td><td>' + highlight(ohqId||'—', query) + '</td><td>' + (ob[obChanOhqCol]||'—') + '</td><td title="' + url + '"><a href="' + (url.startsWith('http') ? url : 'https://'+url) + '">' + highlight(url||'—', query) + '</a></td><td>' + (ob[obChanCol]||'—') + '</td><td>' + (ob[obDateCol]||'—') + '</td><td>' + (ac[acChanCol]||'—') + '</td><td><span class="hits-pill">' + yda + '</span></td><td><span class="hits-pill">' + d7 + '</span></td>' + notesCell(ohqId) + '</tr>';
+      html += '<tr><td title="' + (ob[obNameCol]||'') + '">' + highlight(ob[obNameCol]||'—', query) + '</td><td>' + highlight(ohqId||'—', query) + '</td><td>' + (ob[obChanOhqCol]||'—') + '</td><td title="' + url + '"><a href="' + (url.startsWith('http') ? url : 'https://'+url) + '">' + highlight(url||'—', query) + '</a></td><td>' + (ob[obChanCol]||'—') + '</td><td>' + (ob[obDateCol]||'—') + '</td><td>' + (ob[obOwnerCol]||'—') + '</td><td>' + (ac[acChanCol]||'—') + '</td><td><span class="hits-pill">' + yda + '</span></td><td><span class="hits-pill">' + d7 + '</span></td>' + notesCell(ohqId) + '</tr>';
     }
   } else if (type === 'pending') {
-    html = '<div class="table-wrap"><table><thead><tr><th>Account</th><th>OHQ ID</th><th>Channel OHQ ID</th><th>Website</th><th>Reseller Channel</th><th>Close Date</th><th>Script</th></tr></thead><tbody>';
+    html = '<div class="table-wrap"><table><thead><tr><th>Account</th><th>OHQ ID</th><th>Channel OHQ ID</th><th>Website</th><th>Reseller Channel</th><th>Close Date</th><th>Opportunity Owner</th><th>Script</th></tr></thead><tbody>';
     for (var i = 0; i < filtered.length; i++) {
       var ob = filtered[i], url = ob[obUrlCol] || '', ohqId = ob[obIdCol] || '';
-      html += '<tr><td title="' + (ob[obNameCol]||'') + '">' + highlight(ob[obNameCol]||'—', query) + '</td><td>' + highlight(ohqId||'—', query) + '</td><td>' + (ob[obChanOhqCol]||'—') + '</td><td title="' + url + '"><a href="' + (url.startsWith('http') ? url : 'https://'+url) + '">' + highlight(url||'—', query) + '</a></td><td>' + (ob[obChanCol]||'—') + '</td><td>' + (ob[obDateCol]||'—') + '</td>' + notesCell(ohqId) + '</tr>';
+      html += '<tr><td title="' + (ob[obNameCol]||'') + '">' + highlight(ob[obNameCol]||'—', query) + '</td><td>' + highlight(ohqId||'—', query) + '</td><td>' + (ob[obChanOhqCol]||'—') + '</td><td title="' + url + '"><a href="' + (url.startsWith('http') ? url : 'https://'+url) + '">' + highlight(url||'—', query) + '</a></td><td>' + (ob[obChanCol]||'—') + '</td><td>' + (ob[obDateCol]||'—') + '</td><td>' + (ob[obOwnerCol]||'—') + '</td>' + notesCell(ohqId) + '</tr>';
     }
   } else {
-    html = '<div class="table-wrap"><table><thead><tr><th>Account</th><th>OHQ ID</th><th>Channel OHQ ID</th><th>Website</th><th>Reseller Channel</th><th>Close Date</th><th>Script</th></tr></thead><tbody>';
+    html = '<div class="table-wrap"><table><thead><tr><th>Account</th><th>OHQ ID</th><th>Channel OHQ ID</th><th>Website</th><th>Reseller Channel</th><th>Close Date</th><th>Opportunity Owner</th><th>Script</th></tr></thead><tbody>';
     for (var i = 0; i < filtered.length; i++) {
       var ob = filtered[i], url = ob[obUrlCol] || '', ohqId = ob[obIdCol] || '';
       var chanOhq = ob[obChanOhqCol] || '';
       var noteKey = ohqId || (ob[obNameCol]||'') + '_new';
-      html += '<tr><td title="' + (ob[obNameCol]||'') + '">' + highlight(ob[obNameCol]||'—', query) + '</td><td>' + (isEmpty(ohqId) ? '<span class="missing-pill">Missing</span>' : highlight(ohqId, query)) + '</td><td>' + (isEmpty(chanOhq) ? '<span class="missing-pill">Missing</span>' : chanOhq) + '</td><td title="' + url + '"><a href="' + (url.startsWith('http') ? url : 'https://'+url) + '">' + highlight(url||'—', query) + '</a></td><td>' + (ob[obChanCol]||'—') + '</td><td>' + (ob[obDateCol]||'—') + '</td>' + notesCell(noteKey) + '</tr>';
+      html += '<tr><td title="' + (ob[obNameCol]||'') + '">' + highlight(ob[obNameCol]||'—', query) + '</td><td>' + (isEmpty(ohqId) ? '<span class="missing-pill">Missing</span>' : highlight(ohqId, query)) + '</td><td>' + (isEmpty(chanOhq) ? '<span class="missing-pill">Missing</span>' : chanOhq) + '</td><td title="' + url + '"><a href="' + (url.startsWith('http') ? url : 'https://'+url) + '">' + highlight(url||'—', query) + '</a></td><td>' + (ob[obChanCol]||'—') + '</td><td>' + (ob[obDateCol]||'—') + '</td><td>' + (ob[obOwnerCol]||'—') + '</td>' + notesCell(noteKey) + '</tr>';
     }
   }
   html += '</tbody></table></div>';
