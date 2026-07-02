@@ -19,7 +19,7 @@
   .upload-sub { font-size: 11px; color: #989898; line-height: 1.5; }
   .upload-status { font-size: 11px; color: #A6CA72; font-weight: 700; margin-top: 8px; }
   .dup-notice { font-size: 12px; color: #A6CA72; background: rgba(166,202,114,0.1); border: 1px solid rgba(166,202,114,0.3); border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; display: none; }
-  .metrics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
   .metric { background: #343D4B; border-radius: 8px; padding: 14px 16px; border: 1px solid #4E4E4E; }
   .metric-label { font-size: 11px; color: #989898; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; font-weight: 700; }
   .metric-val { font-size: 28px; font-weight: 700; color: #fff; }
@@ -86,11 +86,10 @@
   <div class="dup-notice" id="dupNotice"></div>
 
   <div class="metrics">
-    <div class="metric"><div class="metric-label">Total Onboarding</div><div class="metric-val" id="mTotal">—</div></div>
     <div class="metric"><div class="metric-label">New Onboardings</div><div class="metric-val new-ob" id="mNew">—</div></div>
-    <div class="metric"><div class="metric-label">Active in ft.app</div><div class="metric-val" id="mActive">—</div></div>
-    <div class="metric"><div class="metric-label">Script Installed</div><div class="metric-val installed" id="mInstalled">—</div></div>
     <div class="metric"><div class="metric-label">Pending Install</div><div class="metric-val pending" id="mPending">—</div></div>
+    <div class="metric"><div class="metric-label">Script Installed</div><div class="metric-val installed" id="mInstalled">—</div></div>
+    <div class="metric"><div class="metric-label">Active in ft.app</div><div class="metric-val" id="mActive">—</div></div>
   </div>
 
   <div class="section">
