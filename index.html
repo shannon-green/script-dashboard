@@ -6,20 +6,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #1A1E24; color: #fff; padding: 0; min-height: 100vh; }
-  .header { background: #1A1E24; border-bottom: 1px solid #343D4B; padding: 14px 24px; display: flex; align-items: center; gap: 12px; }
-  .logo-mark { width: 32px; height: 32px; background: #1C97A6; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .logo-mark svg { width: 20px; height: 20px; fill: #fff; }
-  .logo-text { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.01em; }
-  .logo-text span { color: #1C97A6; }
-  .header-sub { font-size: 12px; color: #989898; margin-left: auto; }
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #1A1E24; color: #fff; min-height: 100vh; }
+  .header { background: #c6002b; border-bottom: 1px solid #a30024; padding: 12px 24px; display: flex; align-items: center; }
+  .header-title { font-size: 15px; font-weight: 700; color: #fff; }
   .main { padding: 24px; }
   .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
   .upload-zone { border: 1px dashed #343D4B; border-radius: 10px; padding: 20px; background: #1A1E24; cursor: pointer; text-align: center; transition: border-color 0.15s, background 0.15s; }
   .upload-zone:hover { border-color: #1C97A6; background: rgba(28,151,166,0.05); }
   .upload-zone.has-file { border-color: #1C97A6; border-style: solid; background: rgba(28,151,166,0.08); }
   .upload-zone input { display: none; }
-  .upload-icon { font-size: 22px; color: #1C97A6; margin-bottom: 8px; }
   .upload-label { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
   .upload-sub { font-size: 11px; color: #989898; line-height: 1.5; }
   .upload-status { font-size: 11px; color: #A6CA72; font-weight: 700; margin-top: 8px; }
@@ -39,14 +34,14 @@
   .clear-btn { margin-left: auto; font-size: 11px; border: 1px solid #4E4E4E; border-radius: 6px; padding: 4px 12px; cursor: pointer; background: transparent; color: #989898; font-family: inherit; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
   .clear-btn:hover { border-color: #989898; color: #fff; }
   .search-bar { display: flex; align-items: center; gap: 8px; background: #343D4B; border: 1px solid #4E4E4E; border-radius: 8px; padding: 0 12px; margin-bottom: 10px; }
-  .search-bar i { color: #989898; font-size: 16px; flex-shrink: 0; }
   .search-bar input { background: transparent; border: none; outline: none; color: #fff; font-family: inherit; font-size: 13px; padding: 9px 0; width: 100%; }
   .search-bar input::placeholder { color: #4E4E4E; }
   .search-count { font-size: 11px; color: #989898; margin-bottom: 8px; }
   .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #343D4B; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
-  th { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #989898; padding: 10px 12px; text-align: left; background: #343D4B; border-bottom: 1px solid #4E4E4E; }
-  td { padding: 9px 12px; border-bottom: 1px solid #343D4B; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #1A1E24; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #989898; padding: 10px 12px; text-align: left; background: #343D4B; border-bottom: 1px solid #4E4E4E; white-space: nowrap; }
+  td { padding: 8px 12px; border-bottom: 1px solid #343D4B; color: #fff; background: #1A1E24; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td.notes-cell { max-width: 200px; white-space: normal; }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: rgba(52,61,75,0.7); }
   .hits-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; background: rgba(28,151,166,0.2); color: #1C97A6; border: 1px solid rgba(28,151,166,0.35); }
@@ -54,30 +49,28 @@
   .no-data { font-size: 13px; color: #989898; padding: 2rem; text-align: center; background: #1A1E24; border-radius: 8px; border: 1px solid #343D4B; }
   a { color: #1C97A6; text-decoration: none; }
   a:hover { text-decoration: underline; }
+  .notes-input { width: 100%; background: #343D4B; border: 1px solid #4E4E4E; border-radius: 6px; color: #fff; font-family: inherit; font-size: 12px; padding: 5px 8px; resize: none; outline: none; min-height: 32px; line-height: 1.4; }
+  .notes-input:focus { border-color: #1C97A6; }
+  .notes-input::placeholder { color: #4E4E4E; }
+  .saved-flash { font-size: 10px; color: #A6CA72; margin-top: 3px; display: none; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="logo-mark">
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-  </div>
-  <div class="logo-text">fullthrottle<span>.ai</span>®</div>
-  <div class="header-sub">Client Onboarding Tracker</div>
+  <div class="header-title">iHeart Client Onboarding Tracker</div>
 </div>
 
 <div class="main">
   <div class="upload-grid">
     <div class="upload-zone" id="zone1" onclick="document.getElementById('file1').click()">
       <input type="file" id="file1" accept=".csv,.xlsx,.xls" onchange="handleFile1(this)">
-      <div class="upload-icon"><i class="ti ti-users" aria-hidden="true"></i></div>
       <div class="upload-label">Daily Onboarding List</div>
       <div class="upload-sub">account name · OHQ ID · website URL · close date · channel</div>
       <div class="upload-status" id="status1"></div>
     </div>
     <div class="upload-zone" id="zone2" onclick="document.getElementById('file2').click()">
       <input type="file" id="file2" accept=".csv,.xlsx,.xls" onchange="handleFile2(this)">
-      <div class="upload-icon"><i class="ti ti-chart-bar" aria-hidden="true"></i></div>
       <div class="upload-label">ft.app Active Clients</div>
       <div class="upload-sub">Client Name · OHQ ID · Channel Client ID · Hits (YDA) · Hits (7d)</div>
       <div class="upload-status" id="status2"></div>
@@ -95,41 +88,46 @@
 
   <div class="section">
     <div class="section-header">
-      <span class="section-title">Script Installed</span>
-      <span class="badge badge-installed" id="installedCount">0</span>
+      <span class="section-title">Pending Script Install</span>
+      <span class="badge badge-pending" id="pendingCount">0</span>
       <button class="clear-btn" onclick="clearAll()">Clear all</button>
     </div>
     <div class="search-bar">
-      <i class="ti ti-search" aria-hidden="true"></i>
-      <input type="text" id="searchInstalled" placeholder="Search by name, OHQ ID, or URL…" oninput="filterTable('installed')">
-    </div>
-    <div class="search-count" id="installedSearchCount"></div>
-    <div id="matchedTable"><div class="no-data">Upload both files to see results.</div></div>
-  </div>
-
-  <div class="section">
-    <div class="section-header">
-      <span class="section-title">Pending Script Install</span>
-      <span class="badge badge-pending" id="pendingCount">0</span>
-    </div>
-    <div class="search-bar">
-      <i class="ti ti-search" aria-hidden="true"></i>
       <input type="text" id="searchPending" placeholder="Search by name, OHQ ID, or URL…" oninput="filterTable('pending')">
     </div>
     <div class="search-count" id="pendingSearchCount"></div>
     <div id="unmatchedTable"><div class="no-data">Upload both files to see results.</div></div>
   </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Script Installed</span>
+      <span class="badge badge-installed" id="installedCount">0</span>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="searchInstalled" placeholder="Search by name, OHQ ID, or URL…" oninput="filterTable('installed')">
+    </div>
+    <div class="search-count" id="installedSearchCount"></div>
+    <div id="matchedTable"><div class="no-data">Upload both files to see results.</div></div>
+  </div>
 </div>
 
 <script>
-let onboardingData = [];
-let activeData = [];
-let matchedRows = [];
-let unmatchedRows = [];
+let onboardingData = [], activeData = [], matchedRows = [], unmatchedRows = [];
 let obNameCol, obIdCol, obUrlCol, obChanCol, obDateCol, acChanCol, acYDACol, ac7dCol;
 
-function normalizeKey(val) { return String(val || '').trim().toLowerCase(); }
+// Notes storage keyed by OHQ ID
+const NOTES_KEY = 'ft_onboarding_notes';
+function loadNotes() { try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '{}'); } catch { return {}; } }
+function saveNote(ohqId, val) {
+  const notes = loadNotes();
+  if (val.trim()) notes[ohqId] = val;
+  else delete notes[ohqId];
+  localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+}
+function getNote(ohqId) { return loadNotes()[ohqId] || ''; }
 
+function normalizeKey(val) { return String(val || '').trim().toLowerCase(); }
 function findCol(headers, candidates) {
   for (const c of candidates) {
     const found = headers.find(h => h.trim().toLowerCase() === c.toLowerCase());
@@ -137,7 +135,6 @@ function findCol(headers, candidates) {
   }
   return null;
 }
-
 function parseFile(file, cb) {
   const name = file.name.toLowerCase();
   if (name.endsWith('.csv')) {
@@ -146,8 +143,7 @@ function parseFile(file, cb) {
     const reader = new FileReader();
     reader.onload = e => {
       const wb = XLSX.read(e.target.result, { type: 'array' });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      cb(XLSX.utils.sheet_to_json(ws, { defval: '' }));
+      cb(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' }));
     };
     reader.readAsArrayBuffer(file);
   }
@@ -160,20 +156,16 @@ function handleFile1(input) {
     const idCol = findCol(headers, ['OHQ ID', 'ohq id', 'OHQID']);
     if (!idCol) { alert('Could not find OHQ ID column in File 1.'); return; }
     const existing = new Set(onboardingData.map(r => normalizeKey(r[idCol])));
-    let dupes = 0;
-    const fresh = [];
+    let dupes = 0; const fresh = [];
     for (const row of rows) {
       const key = normalizeKey(row[idCol]);
       if (!key || existing.has(key)) { dupes++; continue; }
-      existing.add(key);
-      fresh.push(row);
+      existing.add(key); fresh.push(row);
     }
     onboardingData = [...onboardingData, ...fresh];
     const notice = document.getElementById('dupNotice');
-    if (dupes > 0) {
-      notice.textContent = `${dupes} duplicate${dupes > 1 ? 's' : ''} skipped — OHQ ID already exists.`;
-      notice.style.display = 'block';
-    } else { notice.style.display = 'none'; }
+    if (dupes > 0) { notice.textContent = `${dupes} duplicate${dupes>1?'s':''} skipped — OHQ ID already exists.`; notice.style.display = 'block'; }
+    else notice.style.display = 'none';
     document.getElementById('zone1').classList.add('has-file');
     document.getElementById('status1').textContent = `✓ ${onboardingData.length} clients loaded`;
     render();
@@ -191,30 +183,24 @@ function handleFile2(input) {
 }
 
 function render() {
-  if (!onboardingData.length || !activeData.length) {
-    updateMetrics(onboardingData.length, activeData.length, null, null);
-    return;
-  }
+  if (!onboardingData.length || !activeData.length) { updateMetrics(onboardingData.length, activeData.length, null, null); return; }
   const ob = onboardingData, ac = activeData;
   const obH = Object.keys(ob[0]), acH = Object.keys(ac[0]);
-  obNameCol = findCol(obH, ['account name', 'Account Name']);
-  obIdCol   = findCol(obH, ['OHQ ID', 'ohq id', 'OHQID']);
-  obUrlCol  = findCol(obH, ['website URL', 'Website URL', 'url', 'URL']);
-  obChanCol = findCol(obH, ['channel', 'Channel']);
-  obDateCol = findCol(obH, ['close date', 'Close Date']);
-  acChanCol = findCol(acH, ['CHANNEL CLIENT ID', 'Channel Client ID']);
-  acYDACol  = findCol(acH, ['Hits (YDA)', 'hits (yda)']);
-  ac7dCol   = findCol(acH, ['Hits (7d)', 'hits (7d)']);
-  const acIdCol = findCol(acH, ['OHQ ID', 'ohq id', 'OHQID']);
+  obNameCol = findCol(obH, ['account name','Account Name']);
+  obIdCol   = findCol(obH, ['OHQ ID','ohq id','OHQID']);
+  obUrlCol  = findCol(obH, ['website URL','Website URL','url','URL']);
+  obChanCol = findCol(obH, ['channel','Channel']);
+  obDateCol = findCol(obH, ['close date','Close Date']);
+  acChanCol = findCol(acH, ['CHANNEL CLIENT ID','Channel Client ID']);
+  acYDACol  = findCol(acH, ['Hits (YDA)','hits (yda)']);
+  ac7dCol   = findCol(acH, ['Hits (7d)','hits (7d)']);
+  const acIdCol = findCol(acH, ['OHQ ID','ohq id','OHQID']);
   const activeMap = {};
-  for (const row of ac) {
-    const key = normalizeKey(row[acIdCol]);
-    if (key) activeMap[key] = row;
-  }
+  for (const row of ac) { const k = normalizeKey(row[acIdCol]); if (k) activeMap[k] = row; }
   matchedRows = []; unmatchedRows = [];
   for (const row of ob) {
-    const key = normalizeKey(row[obIdCol]);
-    if (activeMap[key]) matchedRows.push({ ob: row, ac: activeMap[key] });
+    const k = normalizeKey(row[obIdCol]);
+    if (activeMap[k]) matchedRows.push({ ob: row, ac: activeMap[k] });
     else unmatchedRows.push(row);
   }
   updateMetrics(ob.length, ac.length, matchedRows.length, unmatchedRows.length);
@@ -225,9 +211,15 @@ function render() {
 }
 
 function highlight(text, query) {
-  if (!query) return text;
-  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return String(text).replace(new RegExp(`(${escaped})`, 'gi'), '<span class="highlight">$1</span>');
+  if (!query) return String(text||'');
+  return String(text||'').replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<span class="highlight">$1</span>');
+}
+
+function notesCell(ohqId) {
+  const val = getNote(ohqId).replace(/"/g, '&quot;');
+  return `<td class="notes-cell">
+    <textarea class="notes-input" rows="1" placeholder="Add note…" onchange="saveNote('${ohqId}', this.value)">${val}</textarea>
+  </td>`;
 }
 
 function filterTable(type) {
@@ -237,71 +229,54 @@ function filterTable(type) {
   const countEl = document.getElementById(isInstalled ? 'installedSearchCount' : 'pendingSearchCount');
   const tableEl = document.getElementById(isInstalled ? 'matchedTable' : 'unmatchedTable');
 
-  if (!rows.length) {
-    countEl.textContent = '';
-    tableEl.innerHTML = '<div class="no-data">Upload both files to see results.</div>';
-    return;
-  }
+  if (!rows.length) { countEl.textContent = ''; tableEl.innerHTML = '<div class="no-data">Upload both files to see results.</div>'; return; }
 
   const filtered = query ? rows.filter(r => {
     const ob = isInstalled ? r.ob : r;
-    const name = normalizeKey(ob[obNameCol]);
-    const id   = normalizeKey(ob[obIdCol]);
-    const url  = normalizeKey(ob[obUrlCol]);
-    return name.includes(query) || id.includes(query) || url.includes(query);
+    return normalizeKey(ob[obNameCol]).includes(query) || normalizeKey(ob[obIdCol]).includes(query) || normalizeKey(ob[obUrlCol]).includes(query);
   }) : rows;
 
   countEl.textContent = query ? `${filtered.length} of ${rows.length} shown` : '';
-
-  if (!filtered.length) {
-    tableEl.innerHTML = '<div class="no-data">No results match your search.</div>';
-    return;
-  }
+  if (!filtered.length) { tableEl.innerHTML = '<div class="no-data">No results match your search.</div>'; return; }
 
   if (isInstalled) {
     let html = `<div class="table-wrap"><table><thead><tr>
-      <th style="width:16%">Account</th><th style="width:10%">OHQ ID</th>
-      <th style="width:14%">Website</th><th style="width:10%">Channel</th>
-      <th style="width:10%">Close Date</th><th style="width:12%">Channel Client ID</th>
-      <th style="width:9%">Hits (YDA)</th><th style="width:9%">Hits (7d)</th>
+      <th>Account</th><th>OHQ ID</th><th>Website</th><th>Channel</th>
+      <th>Close Date</th><th>Channel Client ID</th><th>Hits (YDA)</th><th>Hits (7d)</th><th>Notes</th>
     </tr></thead><tbody>`;
     for (const { ob, ac } of filtered) {
       const url = ob[obUrlCol] || '';
       const yda = ac[acYDACol] !== undefined ? Number(ac[acYDACol]).toLocaleString() : '—';
       const d7  = ac[ac7dCol]  !== undefined ? Number(ac[ac7dCol]).toLocaleString()  : '—';
-      const hName = highlight(ob[obNameCol]||'—', query);
-      const hId   = highlight(ob[obIdCol]||'—', query);
-      const hUrl  = highlight(url||'—', query);
+      const ohqId = ob[obIdCol] || '';
       html += `<tr>
-        <td title="${ob[obNameCol]||''}">${hName}</td>
-        <td>${hId}</td>
-        <td title="${url}"><a href="${url.startsWith('http')?url:'https://'+url}">${hUrl}</a></td>
+        <td title="${ob[obNameCol]||''}">${highlight(ob[obNameCol]||'—', query)}</td>
+        <td>${highlight(ohqId||'—', query)}</td>
+        <td title="${url}"><a href="${url.startsWith('http')?url:'https://'+url}">${highlight(url||'—', query)}</a></td>
         <td>${ob[obChanCol]||'—'}</td>
         <td>${ob[obDateCol]||'—'}</td>
         <td>${ac[acChanCol]||'—'}</td>
         <td><span class="hits-pill">${yda}</span></td>
         <td><span class="hits-pill">${d7}</span></td>
+        ${notesCell(ohqId)}
       </tr>`;
     }
     html += '</tbody></table></div>';
     tableEl.innerHTML = html;
   } else {
     let html = `<div class="table-wrap"><table><thead><tr>
-      <th style="width:22%">Account</th><th style="width:13%">OHQ ID</th>
-      <th style="width:22%">Website</th><th style="width:16%">Channel</th>
-      <th style="width:16%">Close Date</th>
+      <th>Account</th><th>OHQ ID</th><th>Website</th><th>Channel</th><th>Close Date</th><th>Notes</th>
     </tr></thead><tbody>`;
     for (const ob of filtered) {
       const url = ob[obUrlCol] || '';
-      const hName = highlight(ob[obNameCol]||'—', query);
-      const hId   = highlight(ob[obIdCol]||'—', query);
-      const hUrl  = highlight(url||'—', query);
+      const ohqId = ob[obIdCol] || '';
       html += `<tr>
-        <td title="${ob[obNameCol]||''}">${hName}</td>
-        <td>${hId}</td>
-        <td title="${url}"><a href="${url.startsWith('http')?url:'https://'+url}">${hUrl}</a></td>
+        <td title="${ob[obNameCol]||''}">${highlight(ob[obNameCol]||'—', query)}</td>
+        <td>${highlight(ohqId||'—', query)}</td>
+        <td title="${url}"><a href="${url.startsWith('http')?url:'https://'+url}">${highlight(url||'—', query)}</a></td>
         <td>${ob[obChanCol]||'—'}</td>
         <td>${ob[obDateCol]||'—'}</td>
+        ${notesCell(ohqId)}
       </tr>`;
     }
     html += '</tbody></table></div>';
@@ -325,8 +300,7 @@ function clearAll() {
   ['searchInstalled','searchPending'].forEach(id => document.getElementById(id).value = '');
   ['installedSearchCount','pendingSearchCount'].forEach(id => document.getElementById(id).textContent = '');
   document.getElementById('dupNotice').style.display = 'none';
-  document.getElementById('file1').value = '';
-  document.getElementById('file2').value = '';
+  document.getElementById('file1').value = ''; document.getElementById('file2').value = '';
   updateMetrics(0, 0, null, null);
   ['mTotal','mActive','mInstalled','mPending'].forEach(id => document.getElementById(id).textContent = '—');
   document.getElementById('matchedTable').innerHTML = '<div class="no-data">Upload both files to see results.</div>';
