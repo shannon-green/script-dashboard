@@ -10,7 +10,7 @@
   .header { background: #c6002b; border-bottom: 1px solid #a30024; padding: 12px 24px; display: flex; align-items: center; }
   .header-title { font-size: 15px; font-weight: 700; color: #fff; }
   .main { padding: 24px; }
-  .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
   .upload-zone { border: 1px dashed #343D4B; border-radius: 10px; padding: 20px; background: #1A1E24; cursor: pointer; text-align: center; transition: border-color 0.15s, background 0.15s; }
   .upload-zone:hover { border-color: #1C97A6; background: rgba(28,151,166,0.05); }
   .upload-zone.has-file { border-color: #1C97A6; border-style: solid; background: rgba(28,151,166,0.08); }
@@ -18,6 +18,10 @@
   .upload-label { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
   .upload-sub { font-size: 11px; color: #989898; line-height: 1.5; }
   .upload-status { font-size: 11px; color: #A6CA72; font-weight: 700; margin-top: 8px; }
+  .run-wrap { display: flex; justify-content: center; margin-bottom: 20px; padding-top: 12px; }
+  #runBtn { background: #1c97a6; color: #fff; border: none; border-radius: 6px; padding: 6px 24px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.4; pointer-events: none; transition: opacity 0.2s; }
+  #runBtn.active { opacity: 1; pointer-events: auto; }
+  #runBtn.active:hover { background: #177f8c; }
   .dup-notice { font-size: 12px; color: #A6CA72; background: rgba(166,202,114,0.1); border: 1px solid rgba(166,202,114,0.3); border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; display: none; }
   .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
   .metric { background: #343D4B; border-radius: 8px; padding: 14px 16px; border: 1px solid #4E4E4E; }
@@ -39,7 +43,7 @@
   .clear-btn:hover { border-color: #989898; color: #fff; }
   .download-btn { color: #1C97A6; border-color: #1C97A6; }
   .download-btn:hover { background: rgba(28,151,166,0.1); }
-  .search-bar { display: flex; align-items: center; gap: 8px; background: #343D4B; border: 1px solid #4E4E4E; border-radius: 8px; padding: 0 12px; margin-bottom: 10px; }
+  .search-bar { display: flex; align-items: center; background: #343D4B; border: 1px solid #4E4E4E; border-radius: 8px; padding: 0 12px; margin-bottom: 10px; }
   .search-bar input { background: transparent; border: none; outline: none; color: #fff; font-family: inherit; font-size: 13px; padding: 9px 0; width: 100%; }
   .search-bar input::placeholder { color: #4E4E4E; }
   .search-count { font-size: 11px; color: #989898; margin-bottom: 8px; }
@@ -83,8 +87,8 @@
     </div>
   </div>
 
-  <div style="display:flex; justify-content:center; margin-bottom:20px;">
-    <button id="runBtn" onclick="runComparison()" style="background:#1c97a6; color:#fff; border:none; border-radius:6px; padding:6px 24px; font-size:12px; font-weight:700; font-family:inherit; cursor:pointer; letter-spacing:0.05em; text-transform:uppercase; opacity:0.4; pointer-events:none;">Run</button>
+  <div class="run-wrap">
+    <button id="runBtn" onclick="runComparison()">Run</button>
   </div>
 
   <div class="dup-notice" id="dupNotice"></div>
@@ -107,7 +111,7 @@
     </div>
     <div class="search-bar"><input type="text" id="searchNew" placeholder="Search by name, OHQ ID, or URL…" oninput="filterTable('new')"></div>
     <div class="search-count" id="newSearchCount"></div>
-    <div id="newTable"><div class="no-data">Upload files to see results.</div></div>
+    <div id="newTable"><div class="no-data">Upload both files and click Run to see results.</div></div>
   </div>
 
   <div class="section">
@@ -120,7 +124,7 @@
     </div>
     <div class="search-bar"><input type="text" id="searchPending" placeholder="Search by name, OHQ ID, or URL…" oninput="filterTable('pending')"></div>
     <div class="search-count" id="pendingSearchCount"></div>
-    <div id="unmatchedTable"><div class="no-data">Upload both files to see results.</div></div>
+    <div id="unmatchedTable"><div class="no-data">Upload both files and click Run to see results.</div></div>
   </div>
 
   <div class="section">
@@ -133,40 +137,48 @@
     </div>
     <div class="search-bar"><input type="text" id="searchInstalled" placeholder="Search by name, OHQ ID, or URL…" oninput="filterTable('installed')"></div>
     <div class="search-count" id="installedSearchCount"></div>
-    <div id="matchedTable"><div class="no-data">Upload both files to see results.</div></div>
+    <div id="matchedTable"><div class="no-data">Upload both files and click Run to see results.</div></div>
   </div>
 </div>
 
 <script>
-let onboardingData = [], activeData = [], matchedRows = [], unmatchedRows = [], newRows = [];
-let obNameCol, obIdCol, obChanOhqCol, obUrlCol, obChanCol, obDateCol, acChanCol, acYDACol, ac7dCol;
+var onboardingData = [], activeData = [], matchedRows = [], unmatchedRows = [], newRows = [];
+var obNameCol, obIdCol, obChanOhqCol, obUrlCol, obChanCol, obDateCol, acChanCol, acYDACol, ac7dCol;
 
-const NOTES_KEY = 'ft_onboarding_notes';
-function loadNotes() { try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '{}'); } catch { return {}; } }
+var NOTES_KEY = 'ft_onboarding_notes';
+
+function loadNotes() {
+  try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '{}'); } catch(e) { return {}; }
+}
 function saveNote(key, val) {
-  const notes = loadNotes();
+  var notes = loadNotes();
   if (val.trim()) notes[key] = val; else delete notes[key];
   localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
 }
-function getNote(key) { return (loadNotes()[key] || '').replace(/"/g, '&quot;'); }
+function getNote(key) {
+  return (loadNotes()[key] || '').replace(/"/g, '&quot;');
+}
 
 function normalizeKey(val) { return String(val || '').trim().toLowerCase(); }
 function isEmpty(val) { return !String(val || '').trim(); }
+
 function findCol(headers, candidates) {
-  for (const c of candidates) {
-    const f = headers.find(h => h.trim().toLowerCase() === c.toLowerCase());
-    if (f) return f;
+  for (var i = 0; i < candidates.length; i++) {
+    for (var j = 0; j < headers.length; j++) {
+      if (headers[j].trim().toLowerCase() === candidates[i].toLowerCase()) return headers[j];
+    }
   }
   return null;
 }
+
 function parseFile(file, cb) {
-  const name = file.name.toLowerCase();
+  var name = file.name.toLowerCase();
   if (name.endsWith('.csv')) {
-    Papa.parse(file, { header: true, skipEmptyLines: true, complete: r => cb(r.data) });
+    Papa.parse(file, { header: true, skipEmptyLines: true, complete: function(r) { cb(r.data); } });
   } else {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const wb = XLSX.read(e.target.result, { type: 'array' });
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var wb = XLSX.read(e.target.result, { type: 'array' });
       cb(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' }));
     };
     reader.readAsArrayBuffer(file);
@@ -174,53 +186,56 @@ function parseFile(file, cb) {
 }
 
 function updateRunBtn() {
-  const btn = document.getElementById('runBtn');
-  if (onboardingData.length && activeData.length) {
-    btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+  var btn = document.getElementById('runBtn');
+  if (onboardingData.length > 0 && activeData.length > 0) {
+    btn.classList.add('active');
   } else {
-    btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none';
+    btn.classList.remove('active');
   }
 }
 
 function handleFile1(input) {
   if (!input.files[0]) return;
-  parseFile(input.files[0], rows => {
-    const headers = Object.keys(rows[0] || {});
-    const idCol = findCol(headers, ['OHQ ID','ohq id','OHQID']);
+  parseFile(input.files[0], function(rows) {
+    if (!rows.length) return;
+    var headers = Object.keys(rows[0]);
+    var idCol = findCol(headers, ['OHQ ID','ohq id','OHQID']);
     if (!idCol) { alert('Could not find OHQ ID column in File 1.'); return; }
-    const existing = new Set(onboardingData.map(r => normalizeKey(r[idCol])));
-    let dupes = 0; const fresh = [];
-    for (const row of rows) {
-      const key = normalizeKey(row[idCol]);
+    var existing = new Set(onboardingData.map(function(r) { return normalizeKey(r[idCol]); }));
+    var dupes = 0, fresh = [];
+    for (var i = 0; i < rows.length; i++) {
+      var key = normalizeKey(rows[i][idCol]);
       if (key && existing.has(key)) { dupes++; continue; }
       if (key) existing.add(key);
-      fresh.push(row);
+      fresh.push(rows[i]);
     }
-    onboardingData = [...onboardingData, ...fresh];
-    const notice = document.getElementById('dupNotice');
-    if (dupes > 0) { notice.textContent = `${dupes} duplicate${dupes>1?'s':''} skipped — OHQ ID already exists.`; notice.style.display = 'block'; }
+    onboardingData = onboardingData.concat(fresh);
+    var notice = document.getElementById('dupNotice');
+    if (dupes > 0) { notice.textContent = dupes + ' duplicate' + (dupes > 1 ? 's' : '') + ' skipped — OHQ ID already exists.'; notice.style.display = 'block'; }
     else notice.style.display = 'none';
     document.getElementById('zone1').classList.add('has-file');
-    document.getElementById('status1').textContent = `✓ ${onboardingData.length} clients loaded`;
+    document.getElementById('status1').textContent = '✓ ' + onboardingData.length + ' clients loaded';
     updateRunBtn();
   });
 }
 
 function handleFile2(input) {
   if (!input.files[0]) return;
-  parseFile(input.files[0], rows => {
+  parseFile(input.files[0], function(rows) {
     activeData = rows;
     document.getElementById('zone2').classList.add('has-file');
-    document.getElementById('status2').textContent = `✓ ${rows.length} active clients loaded`;
+    document.getElementById('status2').textContent = '✓ ' + rows.length + ' active clients loaded';
     updateRunBtn();
   });
 }
 
-function runComparison() { render(); }
+function runComparison() {
+  if (!onboardingData.length || !activeData.length) return;
+  render();
+}
 
 function render() {
-  if (!onboardingData.length) { updateMetrics(0,0,0,null,null); return; }
-  const ob = onboardingData, obH = Object.keys(ob[0]);
+  var ob = onboardingData, obH = Object.keys(ob[0]);
   obNameCol    = findCol(obH, ['Official Company Name','official company name','account name','Account Name']);
   obIdCol      = findCol(obH, ['OHQ ID','ohq id','OHQID']);
   obChanOhqCol = findCol(obH, ['Channel OHQ ID','channel ohq id','CHANNEL OHQ ID']);
@@ -228,189 +243,147 @@ function render() {
   obChanCol    = findCol(obH, ['Reseller Channel','reseller channel','channel','Channel']);
   obDateCol    = findCol(obH, ['close date','Close Date']);
 
-  newRows = ob.filter(r => isEmpty(r[obIdCol]) || isEmpty(r[obChanOhqCol]));
-  const validRows = ob.filter(r => !isEmpty(r[obIdCol]) && !isEmpty(r[obChanOhqCol]));
+  newRows = ob.filter(function(r) { return isEmpty(r[obIdCol]) || isEmpty(r[obChanOhqCol]); });
+  var validRows = ob.filter(function(r) { return !isEmpty(r[obIdCol]) && !isEmpty(r[obChanOhqCol]); });
 
-  if (!activeData.length) {
-    updateMetrics(ob.length, newRows.length, 0, null, null);
-    filterTable('new'); return;
-  }
-
-  const acH = Object.keys(activeData[0]);
+  var acH = Object.keys(activeData[0]);
   acChanCol = findCol(acH, ['CHANNEL CLIENT ID','Channel Client ID']);
   acYDACol  = findCol(acH, ['Hits (YDA)','hits (yda)']);
   ac7dCol   = findCol(acH, ['Hits (7d)','hits (7d)']);
-  const acIdCol = findCol(acH, ['OHQ ID','ohq id','OHQID']);
-  const activeMap = {};
-  for (const row of activeData) { const k = normalizeKey(row[acIdCol]); if (k) activeMap[k] = row; }
+  var acIdCol = findCol(acH, ['OHQ ID','ohq id','OHQID']);
 
-  matchedRows = []; unmatchedRows = [];
-  for (const row of validRows) {
-    const k = normalizeKey(row[obIdCol]);
-    if (activeMap[k]) matchedRows.push({ ob: row, ac: activeMap[k] });
-    else unmatchedRows.push(row);
+  var activeMap = {};
+  for (var i = 0; i < activeData.length; i++) {
+    var k = normalizeKey(activeData[i][acIdCol]);
+    if (k) activeMap[k] = activeData[i];
   }
 
-  updateMetrics(ob.length, newRows.length, activeData.length, matchedRows.length, unmatchedRows.length);
-  ['new','pending','installed'].forEach(t => {
-    document.getElementById(`search${t.charAt(0).toUpperCase()+t.slice(1)}`).value = '';
-    filterTable(t);
-  });
+  matchedRows = []; unmatchedRows = [];
+  for (var j = 0; j < validRows.length; j++) {
+    var key = normalizeKey(validRows[j][obIdCol]);
+    if (activeMap[key]) matchedRows.push({ ob: validRows[j], ac: activeMap[key] });
+    else unmatchedRows.push(validRows[j]);
+  }
+
+  updateMetrics(newRows.length, activeData.length, matchedRows.length, unmatchedRows.length);
+  document.getElementById('searchNew').value = '';
+  document.getElementById('searchPending').value = '';
+  document.getElementById('searchInstalled').value = '';
+  filterTable('new');
+  filterTable('pending');
+  filterTable('installed');
 }
 
 function highlight(text, query) {
-  if (!query) return String(text||'');
-  return String(text||'').replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<span class="highlight">$1</span>');
+  if (!query) return String(text || '');
+  return String(text || '').replace(new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi'), '<span class="highlight">$1</span>');
 }
+
 function notesCell(key) {
-  const val = getNote(key);
-  return `<td class="notes-cell"><textarea class="notes-input" rows="1" placeholder="Add note…" onchange="saveNote('${key}', this.value)">${val}</textarea></td>`;
+  return '<td class="notes-cell"><textarea class="notes-input" rows="1" placeholder="Add note…" onchange="saveNote(\'' + key + '\', this.value)">' + getNote(key) + '</textarea></td>';
 }
 
 function filterTable(type) {
-  const ids = { installed: ['searchInstalled','installedSearchCount','matchedTable'], pending: ['searchPending','pendingSearchCount','unmatchedTable'], new: ['searchNew','newSearchCount','newTable'] };
-  const [searchId, countId, tableId] = ids[type];
-  const rows = type === 'installed' ? matchedRows : type === 'pending' ? unmatchedRows : newRows;
-  const query = (document.getElementById(searchId).value || '').trim().toLowerCase();
-  const countEl = document.getElementById(countId), tableEl = document.getElementById(tableId);
+  var searchId  = type === 'installed' ? 'searchInstalled' : type === 'pending' ? 'searchPending' : 'searchNew';
+  var countId   = type === 'installed' ? 'installedSearchCount' : type === 'pending' ? 'pendingSearchCount' : 'newSearchCount';
+  var tableId   = type === 'installed' ? 'matchedTable' : type === 'pending' ? 'unmatchedTable' : 'newTable';
+  var rows      = type === 'installed' ? matchedRows : type === 'pending' ? unmatchedRows : newRows;
 
-  if (!rows.length) { countEl.textContent = ''; tableEl.innerHTML = '<div class="no-data">Upload files to see results.</div>'; return; }
+  var query = (document.getElementById(searchId).value || '').trim().toLowerCase();
+  var countEl = document.getElementById(countId);
+  var tableEl = document.getElementById(tableId);
 
-  const filtered = query ? rows.filter(r => {
-    const ob = type === 'installed' ? r.ob : r;
-    return normalizeKey(ob[obNameCol]).includes(query) || normalizeKey(ob[obIdCol]).includes(query) || normalizeKey(ob[obUrlCol]).includes(query);
+  if (!rows.length) { countEl.textContent = ''; tableEl.innerHTML = '<div class="no-data">No data available.</div>'; return; }
+
+  var filtered = query ? rows.filter(function(r) {
+    var ob = type === 'installed' ? r.ob : r;
+    return normalizeKey(ob[obNameCol]).indexOf(query) > -1 || normalizeKey(ob[obIdCol]).indexOf(query) > -1 || normalizeKey(ob[obUrlCol]).indexOf(query) > -1;
   }) : rows;
 
-  countEl.textContent = query ? `${filtered.length} of ${rows.length} shown` : '';
+  countEl.textContent = query ? filtered.length + ' of ' + rows.length + ' shown' : '';
   if (!filtered.length) { tableEl.innerHTML = '<div class="no-data">No results match your search.</div>'; return; }
 
-  let html = '';
+  var html = '';
   if (type === 'installed') {
-    html = `<div class="table-wrap"><table><thead><tr>
-      <th>Account</th><th>OHQ ID</th><th>Channel OHQ ID</th><th>Website</th><th>Reseller Channel</th>
-      <th>Close Date</th><th>Channel Client ID</th><th>Hits (YDA)</th><th>Hits (7d)</th><th>Script</th>
-    </tr></thead><tbody>`;
-    for (const { ob, ac } of filtered) {
-      const url = ob[obUrlCol]||'', ohqId = ob[obIdCol]||'';
-      const yda = ac[acYDACol] !== undefined ? Number(ac[acYDACol]).toLocaleString() : '—';
-      const d7  = ac[ac7dCol]  !== undefined ? Number(ac[ac7dCol]).toLocaleString()  : '—';
-      html += `<tr>
-        <td title="${ob[obNameCol]||''}">${highlight(ob[obNameCol]||'—',query)}</td>
-        <td>${highlight(ohqId||'—',query)}</td>
-        <td>${ob[obChanOhqCol]||'—'}</td>
-        <td title="${url}"><a href="${url.startsWith('http')?url:'https://'+url}">${highlight(url||'—',query)}</a></td>
-        <td>${ob[obChanCol]||'—'}</td><td>${ob[obDateCol]||'—'}</td>
-        <td>${ac[acChanCol]||'—'}</td>
-        <td><span class="hits-pill">${yda}</span></td>
-        <td><span class="hits-pill">${d7}</span></td>
-        ${notesCell(ohqId)}
-      </tr>`;
+    html = '<div class="table-wrap"><table><thead><tr><th>Account</th><th>OHQ ID</th><th>Channel OHQ ID</th><th>Website</th><th>Reseller Channel</th><th>Close Date</th><th>Channel Client ID</th><th>Hits (YDA)</th><th>Hits (7d)</th><th>Script</th></tr></thead><tbody>';
+    for (var i = 0; i < filtered.length; i++) {
+      var ob = filtered[i].ob, ac = filtered[i].ac;
+      var url = ob[obUrlCol] || '', ohqId = ob[obIdCol] || '';
+      var yda = ac[acYDACol] !== undefined ? Number(ac[acYDACol]).toLocaleString() : '—';
+      var d7  = ac[ac7dCol]  !== undefined ? Number(ac[ac7dCol]).toLocaleString()  : '—';
+      html += '<tr><td title="' + (ob[obNameCol]||'') + '">' + highlight(ob[obNameCol]||'—', query) + '</td><td>' + highlight(ohqId||'—', query) + '</td><td>' + (ob[obChanOhqCol]||'—') + '</td><td title="' + url + '"><a href="' + (url.startsWith('http') ? url : 'https://'+url) + '">' + highlight(url||'—', query) + '</a></td><td>' + (ob[obChanCol]||'—') + '</td><td>' + (ob[obDateCol]||'—') + '</td><td>' + (ac[acChanCol]||'—') + '</td><td><span class="hits-pill">' + yda + '</span></td><td><span class="hits-pill">' + d7 + '</span></td>' + notesCell(ohqId) + '</tr>';
     }
   } else if (type === 'pending') {
-    html = `<div class="table-wrap"><table><thead><tr>
-      <th>Account</th><th>OHQ ID</th><th>Channel OHQ ID</th><th>Website</th><th>Reseller Channel</th><th>Close Date</th><th>Script</th>
-    </tr></thead><tbody>`;
-    for (const ob of filtered) {
-      const url = ob[obUrlCol]||'', ohqId = ob[obIdCol]||'';
-      html += `<tr>
-        <td title="${ob[obNameCol]||''}">${highlight(ob[obNameCol]||'—',query)}</td>
-        <td>${highlight(ohqId||'—',query)}</td>
-        <td>${ob[obChanOhqCol]||'—'}</td>
-        <td title="${url}"><a href="${url.startsWith('http')?url:'https://'+url}">${highlight(url||'—',query)}</a></td>
-        <td>${ob[obChanCol]||'—'}</td><td>${ob[obDateCol]||'—'}</td>
-        ${notesCell(ohqId)}
-      </tr>`;
+    html = '<div class="table-wrap"><table><thead><tr><th>Account</th><th>OHQ ID</th><th>Channel OHQ ID</th><th>Website</th><th>Reseller Channel</th><th>Close Date</th><th>Script</th></tr></thead><tbody>';
+    for (var i = 0; i < filtered.length; i++) {
+      var ob = filtered[i], url = ob[obUrlCol] || '', ohqId = ob[obIdCol] || '';
+      html += '<tr><td title="' + (ob[obNameCol]||'') + '">' + highlight(ob[obNameCol]||'—', query) + '</td><td>' + highlight(ohqId||'—', query) + '</td><td>' + (ob[obChanOhqCol]||'—') + '</td><td title="' + url + '"><a href="' + (url.startsWith('http') ? url : 'https://'+url) + '">' + highlight(url||'—', query) + '</a></td><td>' + (ob[obChanCol]||'—') + '</td><td>' + (ob[obDateCol]||'—') + '</td>' + notesCell(ohqId) + '</tr>';
     }
   } else {
-    html = `<div class="table-wrap"><table><thead><tr>
-      <th>Account</th><th>OHQ ID</th><th>Channel OHQ ID</th><th>Website</th><th>Reseller Channel</th><th>Close Date</th><th>Script</th>
-    </tr></thead><tbody>`;
-    for (const ob of filtered) {
-      const url = ob[obUrlCol]||'', ohqId = ob[obIdCol]||'';
-      const chanOhq = ob[obChanOhqCol]||'';
-      const noteKey = ohqId || (ob[obNameCol]||'')+'_new';
-      html += `<tr>
-        <td title="${ob[obNameCol]||''}">${highlight(ob[obNameCol]||'—',query)}</td>
-        <td>${isEmpty(ohqId)?'<span class="missing-pill">Missing</span>':highlight(ohqId,query)}</td>
-        <td>${isEmpty(chanOhq)?'<span class="missing-pill">Missing</span>':chanOhq}</td>
-        <td title="${url}"><a href="${url.startsWith('http')?url:'https://'+url}">${highlight(url||'—',query)}</a></td>
-        <td>${ob[obChanCol]||'—'}</td><td>${ob[obDateCol]||'—'}</td>
-        ${notesCell(noteKey)}
-      </tr>`;
+    html = '<div class="table-wrap"><table><thead><tr><th>Account</th><th>OHQ ID</th><th>Channel OHQ ID</th><th>Website</th><th>Reseller Channel</th><th>Close Date</th><th>Script</th></tr></thead><tbody>';
+    for (var i = 0; i < filtered.length; i++) {
+      var ob = filtered[i], url = ob[obUrlCol] || '', ohqId = ob[obIdCol] || '';
+      var chanOhq = ob[obChanOhqCol] || '';
+      var noteKey = ohqId || (ob[obNameCol]||'') + '_new';
+      html += '<tr><td title="' + (ob[obNameCol]||'') + '">' + highlight(ob[obNameCol]||'—', query) + '</td><td>' + (isEmpty(ohqId) ? '<span class="missing-pill">Missing</span>' : highlight(ohqId, query)) + '</td><td>' + (isEmpty(chanOhq) ? '<span class="missing-pill">Missing</span>' : chanOhq) + '</td><td title="' + url + '"><a href="' + (url.startsWith('http') ? url : 'https://'+url) + '">' + highlight(url||'—', query) + '</a></td><td>' + (ob[obChanCol]||'—') + '</td><td>' + (ob[obDateCol]||'—') + '</td>' + notesCell(noteKey) + '</tr>';
     }
   }
   html += '</tbody></table></div>';
   tableEl.innerHTML = html;
 }
 
-function downloadCSV(type) {
-  const notes = loadNotes();
-  let rows = [], headers = [], filename = '';
+function updateMetrics(newOb, active, installed, pending) {
+  document.getElementById('mNew').textContent = newOb !== null ? newOb : '—';
+  document.getElementById('mActive').textContent = active || '—';
+  document.getElementById('mInstalled').textContent = installed !== null ? installed : '—';
+  document.getElementById('mPending').textContent = pending !== null ? pending : '—';
+  document.getElementById('newCount').textContent = newOb || 0;
+  if (installed !== null) document.getElementById('installedCount').textContent = installed;
+  if (pending !== null) document.getElementById('pendingCount').textContent = pending;
+}
 
+function downloadCSV(type) {
+  var notes = loadNotes();
+  var rows = [], headers = [], filename = '';
   if (type === 'installed') {
     filename = 'script_installed.csv';
     headers = ['Account','OHQ ID','Channel OHQ ID','Website','Reseller Channel','Close Date','Channel Client ID','Hits (YDA)','Hits (7d)','Script'];
-    rows = matchedRows.map(({ ob, ac }) => [
-      ob[obNameCol]||'', ob[obIdCol]||'', ob[obChanOhqCol]||'', ob[obUrlCol]||'',
-      ob[obChanCol]||'', ob[obDateCol]||'', ac[acChanCol]||'',
-      ac[acYDACol]||'', ac[ac7dCol]||'', notes[ob[obIdCol]||'']||''
-    ]);
+    rows = matchedRows.map(function(r) { return [r.ob[obNameCol]||'', r.ob[obIdCol]||'', r.ob[obChanOhqCol]||'', r.ob[obUrlCol]||'', r.ob[obChanCol]||'', r.ob[obDateCol]||'', r.ac[acChanCol]||'', r.ac[acYDACol]||'', r.ac[ac7dCol]||'', notes[r.ob[obIdCol]||'']||'']; });
   } else if (type === 'pending') {
     filename = 'pending_script_install.csv';
     headers = ['Account','OHQ ID','Channel OHQ ID','Website','Reseller Channel','Close Date','Script'];
-    rows = unmatchedRows.map(ob => [
-      ob[obNameCol]||'', ob[obIdCol]||'', ob[obChanOhqCol]||'', ob[obUrlCol]||'',
-      ob[obChanCol]||'', ob[obDateCol]||'', notes[ob[obIdCol]||'']||''
-    ]);
+    rows = unmatchedRows.map(function(ob) { return [ob[obNameCol]||'', ob[obIdCol]||'', ob[obChanOhqCol]||'', ob[obUrlCol]||'', ob[obChanCol]||'', ob[obDateCol]||'', notes[ob[obIdCol]||'']||'']; });
   } else {
     filename = 'new_onboardings.csv';
     headers = ['Account','OHQ ID','Channel OHQ ID','Website','Reseller Channel','Close Date','Script'];
-    rows = newRows.map(ob => {
-      const ohqId = ob[obIdCol]||'';
-      const noteKey = ohqId || (ob[obNameCol]||'')+'_new';
-      return [
-        ob[obNameCol]||'', ohqId, ob[obChanOhqCol]||'', ob[obUrlCol]||'',
-        ob[obChanCol]||'', ob[obDateCol]||'', notes[noteKey]||''
-      ];
-    });
+    rows = newRows.map(function(ob) { var ohqId = ob[obIdCol]||'', noteKey = ohqId || (ob[obNameCol]||'')+'_new'; return [ob[obNameCol]||'', ohqId, ob[obChanOhqCol]||'', ob[obUrlCol]||'', ob[obChanCol]||'', ob[obDateCol]||'', notes[noteKey]||'']; });
   }
-
   if (!rows.length) { alert('No data to download.'); return; }
-
-  const escape = v => `"${String(v).replace(/"/g,'""')}"`;
-  const csv = [headers.map(escape).join(','), ...rows.map(r => r.map(escape).join(','))].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const a = document.createElement('a');
+  var escape = function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; };
+  var csv = [headers.map(escape).join(',')].concat(rows.map(function(r) { return r.map(escape).join(','); })).join('\n');
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
   a.click();
   URL.revokeObjectURL(a.href);
 }
 
-function updateMetrics(total, newOb, active, installed, pending) {
-  document.getElementById('mTotal').textContent = total||'—';
-  document.getElementById('mNew').textContent = newOb !== null ? newOb : '—';
-  document.getElementById('mActive').textContent = active||'—';
-  document.getElementById('mInstalled').textContent = installed !== null ? installed : '—';
-  document.getElementById('mPending').textContent = pending !== null ? pending : '—';
-  document.getElementById('newCount').textContent = newOb||0;
-  if (installed !== null) document.getElementById('installedCount').textContent = installed;
-  if (pending !== null) document.getElementById('pendingCount').textContent = pending;
-}
-
 function clearAll() {
   onboardingData=[]; activeData=[]; matchedRows=[]; unmatchedRows=[]; newRows=[];
-  ['zone1','zone2'].forEach(id => document.getElementById(id).classList.remove('has-file'));
-  ['status1','status2'].forEach(id => document.getElementById(id).textContent='');
-  ['searchInstalled','searchPending','searchNew'].forEach(id => document.getElementById(id).value='');
-  ['installedSearchCount','pendingSearchCount','newSearchCount'].forEach(id => document.getElementById(id).textContent='');
+  ['zone1','zone2'].forEach(function(id) { document.getElementById(id).classList.remove('has-file'); });
+  ['status1','status2'].forEach(function(id) { document.getElementById(id).textContent=''; });
+  ['searchInstalled','searchPending','searchNew'].forEach(function(id) { document.getElementById(id).value=''; });
+  ['installedSearchCount','pendingSearchCount','newSearchCount'].forEach(function(id) { document.getElementById(id).textContent=''; });
   document.getElementById('dupNotice').style.display='none';
   document.getElementById('file1').value=''; document.getElementById('file2').value='';
-  updateMetrics(0,0,0,null,null);
-  ['mTotal','mNew','mActive','mInstalled','mPending'].forEach(id => document.getElementById(id).textContent='—');
-  document.getElementById('matchedTable').innerHTML='<div class="no-data">Upload both files to see results.</div>';
-  document.getElementById('unmatchedTable').innerHTML='<div class="no-data">Upload both files to see results.</div>';
-  document.getElementById('newTable').innerHTML='<div class="no-data">Upload files to see results.</div>';
+  document.getElementById('runBtn').classList.remove('active');
+  updateMetrics(0, 0, null, null);
+  ['mNew','mActive','mInstalled','mPending'].forEach(function(id) { document.getElementById(id).textContent='—'; });
+  ['newCount','installedCount','pendingCount'].forEach(function(id) { document.getElementById(id).textContent='0'; });
+  document.getElementById('matchedTable').innerHTML='<div class="no-data">Upload both files and click Run to see results.</div>';
+  document.getElementById('unmatchedTable').innerHTML='<div class="no-data">Upload both files and click Run to see results.</div>';
+  document.getElementById('newTable').innerHTML='<div class="no-data">Upload both files and click Run to see results.</div>';
 }
 </script>
 </body>
