@@ -243,7 +243,13 @@ function render() {
   obChanCol    = findCol(obH, ['Reseller Channel','reseller channel','channel','Channel']);
   obDateCol    = findCol(obH, ['close date','Close Date']);
 
-  newRows = ob.filter(function(r) { return isEmpty(r[obIdCol]) || isEmpty(r[obChanOhqCol]); });
+  var allNewRows = ob.filter(function(r) { return isEmpty(r[obIdCol]) || isEmpty(r[obChanOhqCol]); });
+  var seenNames = new Set();
+  newRows = [];
+  for (var ni = 0; ni < allNewRows.length; ni++) {
+    var nameKey = normalizeKey(allNewRows[ni][obNameCol]);
+    if (!seenNames.has(nameKey)) { seenNames.add(nameKey); newRows.push(allNewRows[ni]); }
+  }
   var validRows = ob.filter(function(r) { return !isEmpty(r[obIdCol]) && !isEmpty(r[obChanOhqCol]); });
 
   var acH = Object.keys(activeData[0]);
